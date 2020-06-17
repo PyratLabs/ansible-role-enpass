@@ -1,0 +1,36 @@
+---
+
+- name: Ensure RPM GPG key is present
+  rpm_key:
+    key: https://yum.enpass.io/RPM-GPG-KEY-enpass-signing-key
+    state: present
+
+- name: Ensure Fedora is detected as a Red Hat variant
+  set_fact:
+    virtualbox_redhat_variant: "fedora"
+  when: ansible_distribution | lower == "fedora"
+
+- name: Ensure YUM repository file exists
+  yum_repository:
+    name: enpass
+    description: Enpass password manager repository
+    file: enpass
+    baseurl: https://yum.enpass.io/stable/$basearch/h
+    state: present
+    enabled: true
+    gpgcheck: true
+    gpgkey: https://yum.enpass.io/RPM-GPG-KEY-enpass-signing-key
+
+- name: Ensure Enpass is installed (YUM)
+  yum:
+    name: enpass
+    state: present
+    update_cache: true
+  when: ansible_pkg_mgr == "yum"
+
+- name: Ensure Enpass is installed (DNF)
+  yum:
+    name: enpass
+    state: present
+    update_cache: true
+  when: ansible_pkg_mgr == "dnf"
